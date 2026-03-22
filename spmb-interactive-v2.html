@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>跟卖图片翻译任务 - SPMB</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #F5F5F5; color: #333; font-size: 14px; min-height: 100vh; }
+
+  /* ===== Layout ===== */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 200px; background: #001529; color: #fff; flex-shrink: 0; }
+  .sidebar-logo { padding: 16px; font-size: 16px; font-weight: 700; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .sidebar-menu { padding: 8px 0; }
+  .menu-group-title { padding: 8px 16px 4px; font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; }
+  .menu-item { padding: 10px 16px; cursor: pointer; color: rgba(255,255,255,0.65); transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+  .menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .menu-item.active { background: #1677FF; color: #fff; }
+  .menu-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { background: #fff; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999; }
+  .breadcrumb span:last-child { color: #333; }
+  .breadcrumb-sep { color: #ccc; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .page-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+  /* ===== Entry Buttons ===== */
+  .entry-section { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; border: 1px solid #f0f0f0; }
+  .entry-section-label { font-size: 13px; color: #999; margin-right: 4px; }
+
+  /* ===== Buttons ===== */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 16px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; white-space: nowrap; line-height: 1.4; }
+  .btn-primary { background: #1677FF; color: #fff; border-color: #1677FF; }
+  .btn-primary:hover { background: #4096FF; border-color: #4096FF; }
+  .btn-default { background: #fff; color: #333; border-color: #d9d9d9; }
+  .btn-default:hover { color: #1677FF; border-color: #1677FF; }
+  .btn-danger { background: #fff; color: #FF4D4F; border-color: #FF4D4F; }
+  .btn-danger:hover { background: #FF4D4F; color: #fff; }
+  .btn-link { background: transparent; border-color: transparent; color: #1677FF; padding: 4px 8px; }
+  .btn-link:hover { color: #4096FF; }
+  .btn-sm { padding: 4px 12px; font-size: 13px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-gold { background: #FAAD14; color: #fff; border-color: #FAAD14; }
+  .btn-gold:hover { background: #FFC53D; border-color: #FFC53D; }
+
+  /* ===== Stats Cards ===== */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 16px; }
+  .stat-card { flex: 1; background: #fff; border-radius: 8px; padding: 20px 24px; border: 1px solid #f0f0f0; }
+  .stat-card-label { font-size: 13px; color: #8c8c8c; margin-bottom: 8px; }
+  .stat-card-value { font-size: 28px; font-weight: 700; line-height: 1; }
+  .stat-total { color: #262626; }
+  .stat-done { color: #52C41A; }
+  .stat-processing { color: #1677FF; }
+  .stat-failed { color: #FA8C16; }
+
+  /* ===== Filter Bar ===== */
+  .filter-bar { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px solid #f0f0f0; }
+  .filter-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; }
+  .filter-item label { white-space: nowrap; }
+  .filter-select, .filter-input { height: 32px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 10px; font-size: 13px; color: #333; background: #fff; outline: none; transition: border-color 0.2s; }
+  .filter-select:focus, .filter-input:focus { border-color: #1677FF; }
+  .filter-select { min-width: 130px; cursor: pointer; }
+  .filter-input { min-width: 160px; }
+
+  /* ===== Table ===== */
+  .table-container { background: #fff; border-radius: 8px; border: 1px solid #f0f0f0; overflow: hidden; }
+  .table-header-bar { padding: 14px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .table-title { font-size: 15px; font-weight: 600; color: #262626; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #FAFAFA; }
+  th { padding: 12px 14px; text-align: left; font-size: 13px; color: #8c8c8c; font-weight: 500; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  td { padding: 14px 14px; font-size: 13px; color: #333; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+  tbody tr:hover { background: #FAFAFA; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ===== Status Badge ===== */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .badge-processing { background: #E6F4FF; color: #1677FF; }
+  .badge-processing::before { background: #1677FF; animation: pulse 1.5s infinite; }
+  .badge-done { background: #F6FFED; color: #52C41A; }
+  .badge-done::before { background: #52C41A; }
+  .badge-partial { background: #FFF7E6; color: #FA8C16; }
+  .badge-partial::before { background: #FA8C16; }
+  .badge-failed { background: #FFF1F0; color: #FF4D4F; }
+  .badge-failed::before { background: #FF4D4F; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ===== Progress Bar ===== */
+  .progress-wrap { display: flex; align-items: center; gap: 8px; min-width: 110px; }
+  .progress-bar { flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .progress-blue { background: #1677FF; }
+  .progress-green { background: #52C41A; }
+  .progress-anim { background: linear-gradient(90deg, #1677FF 25%, #4096FF 50%, #1677FF 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .progress-text { font-size: 12px; color: #8c8c8c; white-space: nowrap; }
+
+  /* ===== Modal ===== */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal { background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); width: 680px; max-width: 96vw; max-height: 90vh; display: flex; flex-direction: column; transform: scale(0.96) translateY(8px); transition: transform 0.2s; }
+  .modal-overlay.show .modal { transform: scale(1) translateY(0); }
+  .modal-lg { width: 840px; }
+  .modal-header { padding: 18px 24px 14px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #262626; }
+  .modal-close { width: 28px; height: 28px; border-radius: 4px; border: none; background: transparent; cursor: pointer; color: #8c8c8c; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .modal-close:hover { background: #f5f5f5; color: #333; }
+  .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  .modal-footer { padding: 14px 24px; border-top: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+
+  /* ===== Steps ===== */
+  .steps { display: flex; align-items: center; padding: 0 40px; margin-bottom: 24px; }
+  .step-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; cursor: pointer; }
+  .step-item:not(:last-child)::after { content: ''; position: absolute; top: 15px; left: calc(50% + 22px); right: calc(-50% + 22px); height: 1px; background: #e8e8e8; z-index: 0; }
+  .step-item.completed:not(:last-child)::after { background: #1677FF; }
+  .step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; z-index: 1; border: 2px solid #e8e8e8; background: #fff; color: #8c8c8c; transition: all 0.2s; }
+  .step-item.active .step-circle { border-color: #1677FF; background: #1677FF; color: #fff; }
+  .step-item.completed .step-circle { border-color: #1677FF; background: #1677FF; color: #fff; }
+  .step-label { font-size: 12px; color: #8c8c8c; white-space: nowrap; }
+  .step-item.active .step-label, .step-item.completed .step-label { color: #1677FF; }
+
+  /* ===== Upload Area ===== */
+  .upload-area { border: 2px dashed #d9d9d9; border-radius: 8px; padding: 14px 18px; text-align: center; cursor: pointer; transition: all 0.2s; background: #FAFAFA; }
+  .upload-area:hover { border-color: #1677FF; background: #E6F4FF; }
+  .upload-area.dragover { border-color: #1677FF; background: #E6F4FF; }
+  .upload-icon { font-size: 28px; color: #bfbfbf; margin-bottom: 6px; }
+  .upload-title { font-size: 14px; font-weight: 500; color: #262626; margin-bottom: 4px; }
+  .upload-subtitle { font-size: 12px; color: #8c8c8c; line-height: 1.6; }
+  .upload-formats { font-size: 12px; color: #bfbfbf; margin-top: 4px; }
+  .upload-limit { font-size: 12px; color: #FA8C16; margin-top: 4px; font-weight: 500; }
+  .upload-naming-tip { font-size: 12px; color: #8c8c8c; margin-top: 6px; line-height: 1.6; background: #FFFBE6; border-left: 3px solid #FAAD14; padding: 5px 8px; border-radius: 0 4px 4px 0; text-align: left; }
+
+  /* ===== AI Loading ===== */
+  .ai-loading { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px; }
+  .ai-spinner { width: 44px; height: 44px; border: 3px solid #E6F4FF; border-top-color: #1677FF; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-loading-text { font-size: 14px; color: #1677FF; font-weight: 500; }
+  .ai-loading-sub { font-size: 12px; color: #8c8c8c; }
+
+  /* ===== Recognition Result ===== */
+  .recog-result { border-radius: 8px; overflow: hidden; }
+  .recog-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .recog-badge-green { display: inline-flex; align-items: center; gap: 6px; background: #F6FFED; color: #52C41A; border: 1px solid #B7EB8F; border-radius: 16px; padding: 4px 14px; font-size: 13px; font-weight: 500; }
+  .recog-badge-blue { display: inline-flex; align-items: center; gap: 6px; background: #E6F4FF; color: #1677FF; border: 1px solid #91CAFF; border-radius: 16px; padding: 4px 14px; font-size: 13px; font-weight: 500; }
+  .recog-desc { font-size: 13px; color: #666; margin-bottom: 14px; line-height: 1.6; }
+  .grid-9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 240px; }
+  .grid-9-item { aspect-ratio: 1; background: linear-gradient(135deg, #fff7e6, #ffe7ba); border-radius: 6px; border: 1px solid #ffd591; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.15s; }
+  .grid-9-item:hover { border-color: #1677FF; transform: scale(1.03); }
+  .grid-9-item.selected { border-color: #1677FF; box-shadow: 0 0 0 2px rgba(22,119,255,0.25); }
+  .excel-preview { background: #FAFAFA; border: 1px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
+  .excel-preview table { width: 100%; }
+  .excel-preview th { background: #E6F4FF; color: #1677FF; }
+  .excel-preview .highlight { background: #FFF7E6; color: #D46B08; font-weight: 500; }
+
+  /* ===== Quota Panel ===== */
+  .quota-panel { background: #FAFAFA; border: 1px solid #f0f0f0; border-radius: 8px; padding: 16px; }
+  .quota-title { font-size: 13px; font-weight: 600; color: #262626; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #e8e8e8; }
+  .quota-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .quota-label { font-size: 13px; color: #666; }
+  .quota-val { font-size: 13px; color: #333; font-weight: 500; }
+  .quota-divider { border: none; border-top: 1px dashed #e8e8e8; margin: 10px 0; }
+  .quota-highlight { color: #1677FF; font-weight: 600; }
+  .quota-bar { height: 4px; background: #e8e8e8; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .quota-bar-fill { height: 100%; border-radius: 2px; }
+  .step1-layout { display: grid; grid-template-columns: 1fr 200px; gap: 20px; }
+
+  /* ===== Form ===== */
+  .form-item { margin-bottom: 18px; }
+  .form-label { font-size: 13px; color: #333; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+  .form-required { color: #FF4D4F; }
+  .form-input { width: 100%; height: 36px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 12px; font-size: 13px; color: #333; outline: none; transition: border-color 0.2s; }
+  .form-input:focus { border-color: #1677FF; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+  .form-input.readonly { background: #FAFAFA; color: #8c8c8c; cursor: not-allowed; }
+  .form-select { width: 100%; height: 36px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 12px; font-size: 13px; color: #333; outline: none; transition: border-color 0.2s; cursor: pointer; }
+  .form-select:focus { border-color: #1677FF; }
+  .form-hint { font-size: 12px; color: #8c8c8c; margin-top: 5px; background: #FAFAFA; border-radius: 4px; padding: 8px 10px; border: 1px solid #f0f0f0; line-height: 1.6; }
+  .form-warn { font-size: 12px; color: #D46B08; margin-top: 5px; background: #FFF7E6; border-radius: 4px; padding: 8px 10px; border: 1px solid #FFD591; line-height: 1.6; }
+  .char-count { font-size: 12px; color: #bfbfbf; text-align: right; margin-top: 3px; }
+
+  /* ===== Confirm Table ===== */
+  .confirm-table { width: 100%; border-collapse: collapse; border: 1px solid #f0f0f0; border-radius: 8px; overflow: hidden; }
+  .confirm-table tr { border-bottom: 1px solid #f5f5f5; }
+  .confirm-table tr:last-child { border-bottom: none; }
+  .confirm-table td:first-child { width: 140px; background: #FAFAFA; color: #8c8c8c; font-size: 13px; padding: 12px 16px; font-weight: 500; }
+  .confirm-table td:last-child { padding: 12px 16px; font-size: 13px; color: #333; }
+  .info-box { background: #E6F4FF; border: 1px solid #91CAFF; border-radius: 6px; padding: 12px 14px; font-size: 13px; color: #0958D9; line-height: 1.7; margin-top: 16px; display: flex; gap: 8px; }
+  .info-box-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ===== Drawer ===== */
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  .drawer-overlay.show { opacity: 1; pointer-events: all; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 480px; background: #fff; box-shadow: -4px 0 16px rgba(0,0,0,0.12); z-index: 1200; transform: translateX(100%); transition: transform 0.25s ease; display: flex; flex-direction: column; }
+  .drawer-overlay.show .drawer { transform: translateX(0); }
+  .drawer-header { padding: 18px 20px 14px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .drawer-title { font-size: 15px; font-weight: 600; color: #262626; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .drawer-sum-card { background: linear-gradient(135deg, #1677FF, #0052CC); color: #fff; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .drawer-sum-label { font-size: 13px; opacity: 0.8; margin-bottom: 4px; }
+  .drawer-sum-amount { font-size: 36px; font-weight: 700; margin-bottom: 14px; }
+  .drawer-sum-split { display: flex; gap: 24px; }
+  .drawer-sum-item label { font-size: 12px; opacity: 0.75; }
+  .drawer-sum-item div { font-size: 18px; font-weight: 600; }
+
+  /* ===== Toast ===== */
+  #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: rgba(0,0,0,0.8); color: #fff; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; animation: slideIn 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); max-width: 320px; }
+  .toast-success { background: rgba(82,196,26,0.92); }
+  .toast-error { background: rgba(255,77,79,0.92); }
+  .toast-info { background: rgba(22,119,255,0.92); }
+  @keyframes slideIn { from{transform:translateX(40px);opacity:0} to{transform:translateX(0);opacity:1} }
+  @keyframes slideOut { from{transform:translateX(0);opacity:1} to{transform:translateX(40px);opacity:0} }
+
+  /* ===== Branch Tabs ===== */
+  .branch-tabs { display: flex; border-bottom: 2px solid #f0f0f0; margin-bottom: 20px; }
+  .branch-tab { padding: 8px 20px; cursor: pointer; font-size: 14px; color: #8c8c8c; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .branch-tab:hover { color: #1677FF; }
+  .branch-tab.active { color: #1677FF; border-bottom-color: #1677FF; font-weight: 500; }
+
+  /* ===== Checkbox ===== */
+  .checkbox-wrap { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .checkbox-wrap input[type=checkbox] { width: 16px; height: 16px; accent-color: #1677FF; cursor: pointer; }
+
+  /* ===== Misc ===== */
+  .text-red { color: #FF4D4F; font-weight: 500; }
+  .text-green { color: #52C41A; }
+  .text-blue { color: #1677FF; }
+  .text-orange { color: #FA8C16; }
+  .text-gray { color: #8c8c8c; }
+  .divider { border: none; border-top: 1px solid #f0f0f0; margin: 16px 0; }
+  hr.divider { border: none; border-top: 1px dashed #e8e8e8; margin: 12px 0; }
+  .hidden { display: none !important; }
+  .ops-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+  .op-sep { color: #e8e8e8; }
+  .simple-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ===== Type Cards (Step1) ===== */
+  .type-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  .type-card { border: 2px solid #e8e8e8; border-radius: 8px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fff; }
+  .type-card:hover { border-color: #1677FF; background: #EBF5FF; }
+  .type-card.selected { border-color: #1677FF; background: #E6F4FF; box-shadow: 0 0 0 2px rgba(22,119,255,0.15); }
+  .type-card-icon { font-size: 26px; margin-bottom: 7px; }
+  .type-card-title { font-size: 13px; font-weight: 600; color: #262626; margin-bottom: 4px; }
+  .type-card-desc { font-size: 11px; color: #8c8c8c; line-height: 1.4; }
+  .type-upload-panel { display: none; }
+  .type-upload-panel.show { display: block; }
+  .step1-config { display: none; margin-top: 18px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+  .step1-config.show { display: block; }
+  .step2-success-icon { width:52px;height:52px;background:#F6FFED;border:2px solid #52C41A;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:24px;color:#52C41A;font-weight:700; }
+
+  /* ===== Page switcher ===== */
+  .page-view { display: none; }
+  .page-view.active { display: block; }
+
+  /* ===== Leads page mock ===== */
+  .leads-entry-bar { background:#fff; border-radius:8px; padding:12px 20px; margin-bottom:16px; display:flex; align-items:center; gap:12px; border:1px solid #f0f0f0; }
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">SPMB 管理后台</div>
+    <div class="sidebar-menu">
+      <div class="menu-group-title">商品管理</div>
+      <div class="menu-item">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        商品列表
+      </div>
+      <div class="menu-group-title">跟卖管理</div>
+      <div class="menu-item" id="nav-leads" onclick="navTo('leads')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        跟卖线索池
+      </div>
+      <div class="menu-item active" id="nav-tasks" onclick="navTo('tasks')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        图片翻译任务
+      </div>
+      <div class="menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        跟卖审核
+      </div>
+      <div class="menu-group-title">系统管理</div>
+      <div class="menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        系统配置
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>跟卖管理</span>
+        <span class="breadcrumb-sep">/</span>
+        <span>跟卖线索池</span>
+        <span class="breadcrumb-sep">/</span>
+        <span>跟卖图片翻译任务</span>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:13px;color:#8c8c8c;">Admin用户</span>
+      </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+
+      <!-- ===== 跟卖线索池 页面 ===== -->
+      <div id="page-leads" class="page-view">
+        <div class="leads-entry-bar">
+          <button class="btn btn-primary" onclick="openSimpleModal()">+ 新增跟卖线索</button>
+          <button class="btn btn-default" style="border-color:#1677FF;color:#1677FF;" onclick="openWizard()">图片翻译与处理</button>
+        </div>
+        <div class="table-container">
+          <div class="table-header-bar">
+            <span class="table-title">跟卖线索列表</span>
+            <span style="font-size:12px;color:#8c8c8c;">共 4 条记录</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>线索ID</th>
+                <th>线索名称</th>
+                <th>线索类目</th>
+                <th>创建时间</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="font-size:12px;color:#8c8c8c;font-family:monospace;">LC20260317001</td><td>2026Q1-波西米亚风连衣裙</td><td>女装 - 连衣裙</td><td style="font-size:12px;color:#8c8c8c;">2026-03-17 15:42</td><td><span class="badge badge-done">已完成</span></td><td><button class="btn btn-link btn-sm" onclick="navTo('tasks')">查看翻译任务</button></td></tr>
+              <tr><td style="font-size:12px;color:#8c8c8c;font-family:monospace;">LC20260316005</td><td>巴西本地-牛仔系列</td><td>男装 - 裤装</td><td style="font-size:12px;color:#8c8c8c;">2026-03-16 11:20</td><td><span class="badge badge-done">已完成</span></td><td><button class="btn btn-link btn-sm" onclick="navTo('tasks')">查看翻译任务</button></td></tr>
+              <tr><td style="font-size:12px;color:#8c8c8c;font-family:monospace;">LC20260315012</td><td>春季新款-竹节棉系列</td><td>女装 - 上衣</td><td style="font-size:12px;color:#8c8c8c;">2026-03-15 17:00</td><td><span class="badge badge-processing">处理中</span></td><td><button class="btn btn-link btn-sm" onclick="navTo('tasks')">查看翻译任务</button></td></tr>
+              <tr><td style="font-size:12px;color:#8c8c8c;font-family:monospace;">LC20260314008</td><td>Q1-巴西运动风系列</td><td>运动 - 外套</td><td style="font-size:12px;color:#8c8c8c;">2026-03-14 09:15</td><td><span class="badge badge-partial">部分失败</span></td><td><button class="btn btn-link btn-sm" onclick="navTo('tasks')">查看翻译任务</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 图片翻译任务 页面 ===== -->
+      <div id="page-tasks" class="page-view active">
+
+      <!-- Entry Buttons -->
+      <div class="entry-section">
+        <span class="entry-section-label">快捷入口：</span>
+        <button class="btn btn-default" style="border-color:#1677FF;color:#1677FF;" onclick="openWizard()">图片翻译与处理</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-label">任务总数</div>
+          <div class="stat-card-value stat-total" id="stat-total">47</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">已完成</div>
+          <div class="stat-card-value stat-done" id="stat-done">31</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">处理中</div>
+          <div class="stat-card-value stat-processing" id="stat-processing">3</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">失败 / 部分失败</div>
+          <div class="stat-card-value stat-failed" id="stat-failed">13</div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-item">
+          <label>任务状态</label>
+          <select class="filter-select" id="filter-status">
+            <option value="">全部</option>
+            <option value="processing">处理中</option>
+            <option value="done">已完成</option>
+            <option value="partial">部分失败</option>
+            <option value="failed">全部失败</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>翻译方案</label>
+          <select class="filter-select" id="filter-plan">
+            <option value="">全部</option>
+            <option value="方案一">方案一</option>
+            <option value="方案二">方案二</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>创建时间</label>
+          <input type="date" class="filter-select" value="2026-02-17" style="width:140px;">
+          <span style="color:#ccc;">—</span>
+          <input type="date" class="filter-select" value="2026-03-17" style="width:140px;">
+        </div>
+        <div class="filter-item">
+          <label>任务名称</label>
+          <input type="text" class="filter-input" placeholder="搜索任务名称" id="filter-name">
+        </div>
+        <button class="btn btn-default btn-sm" onclick="resetFilters()">重置</button>
+        <button class="btn btn-primary btn-sm" onclick="applyFilters()">查询</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <div class="table-header-bar">
+          <span class="table-title">翻译任务列表</span>
+          <span style="font-size:12px;color:#8c8c8c;">共 <span id="table-total">6</span> 条记录</span>
+        </div>
+        <table id="main-table">
+          <thead>
+            <tr>
+              <th>任务ID</th>
+              <th>任务名称</th>
+              <th>图片数</th>
+              <th>任务类型</th>
+              <th>翻译方案</th>
+              <th>目标语言</th>
+              <th style="min-width:130px;">完成进度</th>
+              <th>创建时间</th>
+              <th>失败数</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+
+      </div><!-- /page-tasks -->
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+</div><!-- /layout -->
+
+
+<!-- ===== SIMPLE MODAL ===== -->
+<div class="modal-overlay" id="simple-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">新增跟卖线索</span>
+      <button class="modal-close" onclick="closeSimpleModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <!-- 线索名称 -->
+      <div class="form-item">
+        <div class="form-label"><span class="form-required">*</span> 线索名称</div>
+        <input type="text" class="form-input" id="simple-name" placeholder="请输入线索名称，建议包含品类和风格，最多50字" maxlength="50" oninput="document.getElementById('simple-name-count').textContent=this.value.length">
+        <div class="char-count"><span id="simple-name-count">0</span> / 50</div>
+      </div>
+      <!-- 所属品类 + 目标地区 -->
+      <div class="simple-form-row">
+        <div class="form-item">
+          <div class="form-label"><span class="form-required">*</span> 所属品类</div>
+          <select class="form-select" id="simple-cate">
+            <option value="">请选择</option>
+            <option>女装</option>
+            <option>男装</option>
+            <option>童装</option>
+            <option>泳装</option>
+            <option>配饰</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <div class="form-label"><span class="form-required">*</span> 目标地区</div>
+          <select class="form-select" id="simple-region">
+            <option>巴西（葡语）</option>
+            <option>美国（英语）</option>
+            <option>西班牙（西语）</option>
+            <option>沙特（阿语）</option>
+          </select>
+        </div>
+      </div>
+      <!-- 线索类型 + 发布时间 -->
+      <div class="simple-form-row">
+        <div class="form-item">
+          <div class="form-label"><span class="form-required">*</span> 线索类型</div>
+          <select class="form-select" id="simple-type">
+            <option>跟卖</option>
+            <option>自营</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <div class="form-label">发布时间</div>
+          <input type="date" class="form-input" id="simple-date">
+        </div>
+      </div>
+      <!-- 元素/主题 -->
+      <div class="form-item">
+        <div class="form-label">元素 / 主题</div>
+        <input type="text" class="form-input" id="simple-theme" placeholder="如：Y2K学院运动风">
+      </div>
+      <!-- 线索图片 -->
+      <div class="form-item">
+        <div class="form-label">线索图片</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
+          <div style="width:60px;height:60px;background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-radius:6px;border:1px solid #f0f0f0;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;">&#127800;</div>
+          <div style="width:60px;height:60px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:6px;border:1px solid #f0f0f0;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;">&#128248;</div>
+          <div style="width:60px;height:60px;background:#fafafa;border-radius:6px;border:2px dashed #d9d9d9;display:flex;align-items:center;justify-content:center;font-size:22px;color:#bfbfbf;cursor:pointer;" onclick="showToast('图片选择器已打开（演示）','info')">+</div>
+        </div>
+        <div class="form-hint">支持 JPG / PNG，单图 ≤ 10MB，最多 20 张</div>
+      </div>
+      <!-- 图片翻译任务入口 -->
+      <div style="background:#EBF5FF;border:1px solid #91CAFF;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="font-size:13px;color:#555;line-height:1.5;">如需对线索图片进行 AI 翻译处理，可前往翻译任务页单独创建</div>
+        <button class="btn btn-link btn-sm" style="color:#1677FF;white-space:nowrap;flex-shrink:0;" onclick="closeSimpleModal();openWizard()">前往新增图片翻译任务 &#8594;</button>
+      </div>
+      <!-- 备注 -->
+      <div class="form-item" style="margin-bottom:0;">
+        <div class="form-label">备注</div>
+        <textarea class="form-input" id="simple-remark" rows="2" placeholder="可选" style="height:auto;padding:8px 12px;resize:none;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeSimpleModal()">取消</button>
+      <button class="btn btn-primary" onclick="submitSimpleModal()">确定提交</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== WIZARD MODAL ===== -->
+<div class="modal-overlay" id="wizard-overlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">图片翻译与处理</span>
+      <button class="modal-close" onclick="closeWizard()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Steps -->
+      <div class="steps">
+        <div class="step-item active" id="step-item-1">
+          <div class="step-circle" id="step-circle-1">1</div>
+          <div class="step-label">选择类型 · 上传 · 配置</div>
+        </div>
+        <div class="step-item" id="step-item-2">
+          <div class="step-circle" id="step-circle-2">2</div>
+          <div class="step-label">查看任务信息</div>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <div id="wizard-step1">
+        <!-- 任务类型选择 -->
+        <div class="type-cards-grid">
+          <div class="type-card" id="type-card-translate" onclick="selectTaskType('translate')">
+            <div class="type-card-icon">&#128221;</div>
+            <div class="type-card-title">图片文本翻译</div>
+            <div class="type-card-desc">有图有文字<br>OCR识别+翻译替换</div>
+          </div>
+          <div class="type-card" id="type-card-label" onclick="selectTaskType('label')">
+            <div class="type-card-icon">&#127991;</div>
+            <div class="type-card-title">图片打标与翻译</div>
+            <div class="type-card-desc">有图无文字<br>打标+文字翻译</div>
+          </div>
+          <div class="type-card" id="type-card-splice" onclick="selectTaskType('splice')">
+            <div class="type-card-icon">&#128247;</div>
+            <div class="type-card-title">图片拼接</div>
+            <div class="type-card-desc">最多9张合并单图<br>不消耗上传额度</div>
+          </div>
+          <div class="type-card" id="type-card-gen" onclick="selectTaskType('gen')">
+            <div class="type-card-icon">&#10024;</div>
+            <div class="type-card-title">文生图</div>
+            <div class="type-card-desc">上传Excel<br>根据描述生成图片</div>
+          </div>
+        </div>
+
+        <div class="step1-layout">
+          <!-- Left: 各类型上传区 -->
+          <div>
+            <!-- 默认提示 -->
+            <div id="type-hint" style="padding:28px;text-align:center;color:#bfbfbf;border:2px dashed #e8e8e8;border-radius:8px;font-size:13px;">
+              &#8679; 请先选择任务类型
+            </div>
+
+            <!-- 图片文本翻译 -->
+            <div id="upload-translate" class="type-upload-panel">
+              <div class="upload-area" onclick="simulateUpload('translate')" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                <div class="upload-icon">&#128248;</div>
+                <div class="upload-title">点击 / 拖拽上传图片，或选择整个文件夹</div>
+                <div class="upload-subtitle">支持单张图片或文件夹批量上传 · JPG / PNG · 单文件 ≤ 5MB</div>
+              </div>
+              <div class="upload-naming-tip">&#9888; 任务名称将自动以文件 / 文件夹名称生成，请规范命名。示例：<strong>2026-巴西-波西米亚风-01.jpg</strong> 或文件夹 <strong>2026Q1-巴西-系列</strong></div>
+              <div style="margin-top:8px;">
+                <button class="btn btn-primary btn-sm" onclick="simulateUpload('translate')">&#9654; 模拟上传图片</button>
+              </div>
+              <div id="result-translate" class="hidden recog-result" style="margin-top:10px;">
+                <div class="recog-badge-row"><span class="recog-badge-green">&#10003; 上传完成，请填写下方任务配置后提交</span></div>
+              </div>
+            </div>
+
+            <!-- 图片打标与翻译 -->
+            <div id="upload-label" class="type-upload-panel">
+              <div class="form-warn" style="margin-bottom:10px;">&#9888;&#65039; 打标严格使用图片文件名，请确保文件名规范（如：2026-波西米亚-连衣裙-01.jpg）</div>
+              <div class="upload-area" onclick="simulateUpload('label')" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                <div class="upload-icon">&#128248;</div>
+                <div class="upload-title">点击 / 拖拽上传图片，或选择整个文件夹</div>
+                <div class="upload-subtitle">支持单张图片或文件夹批量上传 · JPG / PNG · 图片无文字</div>
+              </div>
+              <div class="upload-naming-tip">&#9888; 打标内容严格使用文件名生成，请规范命名。示例：<strong>2026-波西米亚-连衣裙-01.jpg</strong> 或文件夹 <strong>2026Q1-春季-连衣裙</strong></div>
+              <div style="margin-top:8px;">
+                <button class="btn btn-primary btn-sm" onclick="simulateUpload('label')">&#9654; 模拟上传图片</button>
+              </div>
+              <div id="result-label" class="hidden recog-result" style="margin-top:10px;">
+                <div class="recog-badge-row"><span class="recog-badge-green">&#10003; 上传完成，请填写下方任务配置后提交</span></div>
+              </div>
+            </div>
+
+            <!-- 图片拼接 -->
+            <div id="upload-splice" class="type-upload-panel">
+              <div class="form-hint" style="margin-bottom:12px;">&#128247; 最多 9 张图拼接，<strong>不消耗上传额度</strong>。多图等比缩放后合并输出单张图片，完成后可直接下载。</div>
+              <div style="font-size:13px;color:#666;margin-bottom:8px;">点击选择图片（已选 <span id="splice-count">0</span> 张，最多 9 张）：</div>
+              <div class="grid-9" id="splice-grid">
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+                <div class="grid-9-item" onclick="toggleSpliceItem(this)">&#128248;</div>
+              </div>
+              <div id="result-splice" class="hidden recog-result" style="margin-top:14px;">
+                <div class="recog-badge-row"><span class="recog-badge-blue">&#10003; 已选 <span id="splice-count-result">0</span> 张图片</span></div>
+              </div>
+            </div>
+
+            <!-- 文生图 -->
+            <div id="upload-gen" class="type-upload-panel">
+              <div class="upload-area" onclick="simulateUpload('gen')" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                <div class="upload-icon">&#128202;</div>
+                <div class="upload-title">点击上传 Excel 文件</div>
+                <div class="upload-subtitle">须含「标的元素主题」列</div>
+                <div class="upload-formats">格式：.xlsx</div>
+              </div>
+              <div style="margin-top:10px;display:flex;gap:10px;">
+                <button class="btn btn-primary btn-sm" onclick="simulateUpload('gen')">&#9654; 模拟上传 Excel</button>
+                <button class="btn btn-default btn-sm" onclick="showToast('Excel模版下载中...','success')">&#8595; 下载 Excel 模版</button>
+              </div>
+              <div id="result-gen" class="hidden recog-result" style="margin-top:10px;">
+                <div class="recog-badge-row"><span class="recog-badge-blue">&#10003; 上传完成，请填写下方任务配置后提交</span></div>
+              </div>
+            </div>
+
+            <!-- AI Loading -->
+            <div id="ai-loading" class="hidden" style="margin-top:14px;">
+              <div class="ai-loading">
+                <div class="ai-spinner"></div>
+                <div class="ai-loading-text">上传处理中...</div>
+                <div class="ai-loading-sub" id="ai-loading-sub">请稍候</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Quota Panel -->
+          <div id="quota-panel-wrap">
+            <div class="quota-panel">
+              <div class="quota-title">当日处理额度</div>
+              <div class="quota-row"><span class="quota-label">当日任务上限</span><span class="quota-val quota-highlight">1000 次</span></div>
+              <div class="quota-row"><span class="quota-label">单次图片上限</span><span class="quota-val">100 张</span></div>
+              <hr class="divider">
+              <div class="quota-row"><span class="quota-label">本日已用（总计）</span><span class="quota-val quota-highlight">7 / 1000</span></div>
+              <div class="quota-bar"><div class="quota-bar-fill" style="width:0.7%;background:#1677FF;"></div></div>
+              <div style="height:4px;"></div>
+              <div style="font-size:11px;color:#8c8c8c;margin-top:4px;">今日剩余 993 次可用</div>
+            </div>
+          </div>
+        </div>
+
+      <!-- Step1 配置区：上传完成后内联显示 -->
+      <div id="step1-config" class="step1-config">
+
+        <!-- 图片文本翻译 配置 -->
+        <div id="form-translate">
+          <div style="font-size:13px;color:#1677FF;font-weight:500;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">&#128221; 任务配置 — 图片文本翻译</div>
+          <div class="simple-form-row">
+            <div class="form-item">
+              <div class="form-label"><span class="form-required">*</span> 任务名称</div>
+              <input type="text" class="form-input" id="task-name-translate" value="2026Q1巴西-波西米亚风系列" maxlength="50" oninput="updateCharCount(this,'count-translate')">
+              <div class="char-count"><span id="count-translate">16</span> / 50</div>
+            </div>
+            <div class="form-item">
+              <div class="form-label"><span class="form-required">*</span> 目标语言</div>
+              <select class="form-select" id="lang-translate">
+                <option value="">请选择目标语言</option>
+                <option selected>葡萄牙语（巴西）</option>
+                <option>英语</option>
+                <option>西班牙语</option>
+                <option>阿拉伯语</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-hint">AI 方案由后端自动路由，翻译后原位替换图片文字，保持原排版布局。</div>
+        </div>
+
+        <!-- 图片打标与翻译 配置 -->
+        <div id="form-label" class="hidden">
+          <div style="font-size:13px;color:#1677FF;font-weight:500;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">&#127991; 任务配置 — 图片打标与翻译</div>
+          <div class="simple-form-row">
+            <div class="form-item">
+              <div class="form-label"><span class="form-required">*</span> 任务名称</div>
+              <input type="text" class="form-input" id="task-name-label" value="春季运动系列-打标翻译" maxlength="50" oninput="updateCharCount(this,'count-label')">
+              <div class="char-count"><span id="count-label">12</span> / 50</div>
+            </div>
+            <div class="form-item">
+              <div class="form-label"><span class="form-required">*</span> 目标语言</div>
+              <select class="form-select" id="lang-label">
+                <option value="">请选择目标语言</option>
+                <option>葡萄牙语（巴西）</option>
+                <option selected>英语</option>
+                <option>西班牙语</option>
+                <option>阿拉伯语</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-warn">&#9888;&#65039; 打标将严格使用图片文件名，请确保已按规范命名（如：2026-波西米亚-连衣裙-01.jpg）。文件名不规范将影响打标准确率。</div>
+        </div>
+
+        <!-- 图片拼接 配置 -->
+        <div id="form-splice" class="hidden">
+          <div style="font-size:13px;color:#1677FF;font-weight:500;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">&#128247; 任务配置 — 图片拼接</div>
+          <div class="simple-form-row">
+            <div class="form-item">
+              <div class="form-label"><span class="form-required">*</span> 任务名称</div>
+              <input type="text" class="form-input" id="task-name-splice" placeholder="请输入任务名称" maxlength="50" oninput="updateCharCount(this,'count-splice')">
+              <div class="char-count"><span id="count-splice">0</span> / 50</div>
+            </div>
+            <div class="form-item">
+              <div class="form-label">已选图片</div>
+              <input type="text" class="form-input readonly" id="splice-count-display" value="0 张" readonly>
+            </div>
+          </div>
+          <div class="form-hint">
+            &#128247; 图片拼接<strong>不消耗翻译额度</strong>，最多 9 张图片合并为单张图片输出。<br>
+            <span style="color:#8c8c8c;">拼接规则：等比缩放 · √n 列正方形布局 · PNG 无损输出<br>任务完成后直接生成图片 URL，可在后台直接下载，不生成 Excel / zip。</span>
+          </div>
+        </div>
+
+        <!-- 文生图 配置 -->
+        <div id="form-gen" class="hidden">
+          <div style="font-size:13px;color:#1677FF;font-weight:500;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">&#10024; 任务配置 — 文生图</div>
+          <div class="simple-form-row">
+            <div class="form-item">
+              <div class="form-label"><span class="form-required">*</span> 任务名称</div>
+              <input type="text" class="form-input" id="task-name-gen" placeholder="请输入任务名称" maxlength="50" oninput="updateCharCount(this,'count-gen')">
+              <div class="char-count"><span id="count-gen">0</span> / 50</div>
+            </div>
+            <div class="form-item">
+              <div class="form-label">Excel 数据</div>
+              <input type="text" class="form-input readonly" value="已解析 12 行有效数据" readonly>
+            </div>
+          </div>
+          <div class="form-hint">将根据「标的元素主题」列文字内容，使用 Gemini 生成对应图片。每行对应一张生成图。</div>
+        </div>
+
+      </div><!-- /step1-config -->
+      </div><!-- /wizard-step1 -->
+
+      <!-- Step 2：查看已发布任务信息 -->
+      <div id="wizard-step2" class="hidden">
+        <div style="text-align:center;padding:20px 0 14px;">
+          <div class="step2-success-icon">&#10003;</div>
+          <div style="font-size:16px;font-weight:600;color:#262626;margin-top:10px;">图片已上传，任务已发布</div>
+          <div style="font-size:13px;color:#8c8c8c;margin-top:4px;">任务已进入处理队列，AI 正在工作中</div>
+        </div>
+        <table class="confirm-table">
+          <tr><td>任务名称</td><td id="sum-name">—</td></tr>
+          <tr id="sum-lang-row"><td>目标语言</td><td id="sum-lang">—</td></tr>
+          <tr><td>任务类型</td><td id="sum-type">—</td></tr>
+          <tr><td>图片数量</td><td id="sum-count">—</td></tr>
+          <tr><td>预计消耗 Token</td><td id="sum-token" style="color:#1677FF;font-weight:500;">—</td></tr>
+          <tr><td>预计处理时间</td><td id="sum-time" style="color:#8c8c8c;">—</td></tr>
+        </table>
+        <div class="info-box">
+          <span class="info-box-icon">&#8505;</span>
+          <div>任务已进入队列处理，处理期间不影响其他任务正常使用。</div>
+        </div>
+      </div>
+    </div><!-- /modal-body -->
+
+    <div class="modal-footer">
+      <button class="btn btn-default" id="wizard-cancel" onclick="closeWizard()">取消</button>
+      <button class="btn btn-default" id="wizard-prev" style="display:none;">上一步</button>
+      <button class="btn btn-primary" id="wizard-next" onclick="wizardNext()">提交</button>
+      <button class="btn btn-primary" id="btn-to-tasks" onclick="closeWizard();navTo('tasks')" style="display:none;">去任务列表 →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== RETRY CONFIRM MODAL ===== -->
+<div class="modal-overlay" id="retry-overlay">
+  <div class="modal" style="width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">确认重试</span>
+      <button class="modal-close" onclick="closeRetryModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:14px;color:#333;line-height:1.7;">
+        确认对任务 <strong id="retry-task-name"></strong> 的失败图片进行重试？<br>
+        <span style="color:#8c8c8c;font-size:13px;">重试将重新消耗额度，请确认后操作。</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeRetryModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmRetry()">确认重试</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPORT FAIL CONFIRM ===== -->
+<div class="modal-overlay" id="export-overlay">
+  <div class="modal" style="width:380px;">
+    <div class="modal-header">
+      <span class="modal-title">导出失败记录</span>
+      <button class="modal-close" onclick="closeExportModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:14px;color:#333;line-height:1.7;">
+        将导出任务中所有失败图片的记录（Excel格式），包含失败原因和文件名。<br>
+        <span style="color:#8c8c8c;font-size:13px;">文件将在 3-5 秒内准备完成。</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeExportModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmExport()">确认导出</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== DRAWER ===== -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-header">
+      <span class="drawer-title">&#128176; 消费记录</span>
+      <button class="modal-close" onclick="closeDrawer()">&#x2715;</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-sum-card">
+        <div class="drawer-sum-label">本月消费总计</div>
+        <div class="drawer-sum-amount">¥ 42.30</div>
+        <div class="drawer-sum-split">
+          <div class="drawer-sum-item">
+            <label>方案一消费</label>
+            <div>¥ 36.00</div>
+          </div>
+          <div class="drawer-sum-item">
+            <label>方案二消费</label>
+            <div>¥ 6.30</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:14px;font-weight:600;color:#262626;margin-bottom:12px;">消费明细</div>
+      <div style="font-size:12px;color:#8c8c8c;margin-bottom:12px;background:#FFF7E6;border:1px solid #FFD591;border-radius:4px;padding:8px 10px;">
+        &#9432; 消费记录仅在任务完成后入账，处理中任务不计入消费。
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#FAFAFA;">
+            <th style="padding:8px 10px;font-size:12px;color:#8c8c8c;border-bottom:1px solid #f0f0f0;text-align:left;font-weight:500;">任务名称</th>
+            <th style="padding:8px 10px;font-size:12px;color:#8c8c8c;border-bottom:1px solid #f0f0f0;text-align:left;font-weight:500;">方案</th>
+            <th style="padding:8px 10px;font-size:12px;color:#8c8c8c;border-bottom:1px solid #f0f0f0;text-align:left;font-weight:500;">张数</th>
+            <th style="padding:8px 10px;font-size:12px;color:#8c8c8c;border-bottom:1px solid #f0f0f0;text-align:left;font-weight:500;">单价</th>
+            <th style="padding:8px 10px;font-size:12px;color:#8c8c8c;border-bottom:1px solid #f0f0f0;text-align:left;font-weight:500;">费用</th>
+            <th style="padding:8px 10px;font-size:12px;color:#8c8c8c;border-bottom:1px solid #f0f0f0;text-align:left;font-weight:500;">时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">26Q1KA-印花连衣裙</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;"><span class="badge badge-processing" style="font-size:11px;">方案一</span></td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;">38 张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">0.30元/张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;font-weight:600;color:#262626;">¥ 11.40</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">03-16</td>
+          </tr>
+          <tr style="background:#FAFAFA;">
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">巴西本地-牛仔系列</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;"><span class="badge badge-processing" style="font-size:11px;">方案一</span></td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;">12 张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">0.30元/张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;font-weight:600;color:#262626;">¥ 3.60</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">03-16</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">春季新款-竹节棉系列</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;"><span class="badge badge-done" style="font-size:11px;">方案二</span></td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;">18 张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">极低</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;font-weight:600;color:#262626;">¥ 0.80</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">03-17</td>
+          </tr>
+          <tr style="background:#FAFAFA;">
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;">Q1-巴西运动风系列</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;"><span class="badge badge-done" style="font-size:11px;">方案二</span></td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;">30 张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">极低</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;font-weight:600;color:#262626;">¥ 1.20</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">03-15</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;">巴西本地-牛仔系列</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;"><span class="badge badge-processing" style="font-size:11px;">方案一</span></td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;">75 张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">0.30元/张</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;font-weight:600;color:#262626;">¥ 22.50</td>
+            <td style="padding:9px 10px;font-size:12px;border-bottom:1px solid #f5f5f5;color:#8c8c8c;">03-15</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:#8c8c8c;">本月共 5 条消费记录</span>
+        <button class="btn btn-default btn-sm">导出明细</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+var tableData = [
+  { id:'TL20260317000006', name:'2026Q1巴西-波西米亚', count:24, type:'图片文本翻译', plan:'后端路由(方案二)', lang:'葡萄牙语(巴西)', done:0, total:24, created:'2026-03-17 15:42', failCount:0, status:'processing' },
+  { id:'TL20260317000005', name:'春季新款-竹节棉系列', count:18, type:'图片打标与翻译', plan:'后端路由(方案二)', lang:'英语', done:18, total:18, created:'2026-03-17 14:30', failCount:0, status:'done' },
+  { id:'TL20260316000012', name:'26Q1KA-印花连衣裙', count:45, type:'图片文本翻译', plan:'方案一', lang:'葡萄牙语(巴西)', done:38, total:45, created:'2026-03-16 11:20', failCount:7, status:'partial' },
+  { id:'TL20260316000008', name:'巴西本地-牛仔系列', count:12, type:'文生图', plan:'后端路由(方案一)', lang:'葡萄牙语(巴西)', done:12, total:12, created:'2026-03-16 09:15', failCount:0, status:'done' },
+  { id:'TL20260315000020', name:'商管中台-精品推送', count:60, type:'图片文本翻译', plan:'后端路由(方案二)', lang:'西班牙语', done:0, total:60, created:'2026-03-15 17:00', failCount:60, status:'failed' },
+  { id:'TL20260315000015', name:'Q1-巴西运动风系列', count:30, type:'图片打标与翻译', plan:'后端路由(方案二)', lang:'葡萄牙语(巴西)', done:30, total:30, created:'2026-03-15 14:45', failCount:0, status:'done' },
+  { id:'TL20260314000009', name:'春促-拼接主图素材', count:9, type:'图片拼接', plan:'—', lang:'—', done:9, total:9, created:'2026-03-14 10:00', failCount:0, status:'done' },
+];
+
+var currentStep = 1;
+var currentTaskType = 'translate'; // translate | label | splice | gen
+var retryTargetId = null;
+
+// ===== PAGE NAV =====
+function navTo(page) {
+  var pages = ['leads', 'tasks'];
+  pages.forEach(function(p) {
+    var el = document.getElementById('page-' + p);
+    if (el) el.classList.toggle('active', p === page);
+    var nav = document.getElementById('nav-' + p);
+    if (nav) nav.classList.toggle('active', p === page);
+  });
+  var bc = document.querySelector('.breadcrumb span:last-child');
+  if (bc) bc.textContent = page === 'leads' ? '跟卖线索池' : '跟卖图片翻译任务';
+}
+
+// ===== TABLE RENDER =====
+function renderTable(data) {
+  var tbody = document.getElementById('table-body');
+  if (!data) data = tableData;
+  tbody.innerHTML = '';
+  data.forEach(function(row) {
+    var statusHtml = '';
+    if (row.status === 'processing') statusHtml = '<span class="badge badge-processing">处理中</span>';
+    else if (row.status === 'done') statusHtml = '<span class="badge badge-done">已完成</span>';
+    else if (row.status === 'partial') statusHtml = '<span class="badge badge-partial">部分失败</span>';
+    else if (row.status === 'failed') statusHtml = '<span class="badge badge-failed">全部失败</span>';
+
+    var pct = row.total > 0 ? Math.round(row.done / row.total * 100) : 0;
+    var barClass = row.status === 'processing' ? 'progress-anim progress-blue' : 'progress-green';
+    if (row.status === 'failed') barClass = 'progress-fill';
+    var progressHtml = '<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill ' + barClass + '" style="width:' + pct + '%"></div></div><span class="progress-text">' + row.done + '/' + row.total + '</span></div>';
+
+    var failHtml = row.failCount > 0 ? '<span class="text-red">' + row.failCount + '</span>' : '<span class="text-gray">—</span>';
+
+    var opsHtml = '';
+    if (row.status === 'done') {
+      opsHtml = '<button class="btn btn-link btn-sm" onclick="downloadAll(\'' + row.id + '\')">下载全部</button>';
+    } else if (row.status === 'partial') {
+      opsHtml = '<div class="ops-wrap"><button class="btn btn-link btn-sm" onclick="downloadAll(\'' + row.id + '\')">下载成功</button><span class="op-sep">·</span><button class="btn btn-link btn-sm" style="color:#FA8C16" onclick="openExportModal(\'' + row.id + '\',\'' + row.name + '\')">导出失败</button><span class="op-sep">·</span><button class="btn btn-link btn-sm" style="color:#FF4D4F" onclick="openRetryModal(\'' + row.id + '\',\'' + row.name + '\')">重试</button></div>';
+    } else if (row.status === 'failed') {
+      opsHtml = '<button class="btn btn-link btn-sm" style="color:#FF4D4F" onclick="openRetryModal(\'' + row.id + '\',\'' + row.name + '\')">重试</button>';
+    } else {
+      opsHtml = '<span class="text-gray" style="font-size:12px;">—</span>';
+    }
+
+    var tr = document.createElement('tr');
+    tr.id = 'row-' + row.id;
+    tr.innerHTML =
+      '<td style="font-size:12px;color:#8c8c8c;font-family:monospace;">' + row.id + '</td>' +
+      '<td style="max-width:150px;"><span title="' + row.name + '" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;">' + row.name + '</span></td>' +
+      '<td>' + row.count + '</td>' +
+      '<td>' + row.type + '</td>' +
+      '<td>' + row.plan + '</td>' +
+      '<td>' + row.lang + '</td>' +
+      '<td>' + progressHtml + '</td>' +
+      '<td style="white-space:nowrap;font-size:12px;color:#8c8c8c;">' + row.created + '</td>' +
+      '<td>' + failHtml + '</td>' +
+      '<td>' + statusHtml + '</td>' +
+      '<td>' + opsHtml + '</td>';
+    tbody.appendChild(tr);
+  });
+  document.getElementById('table-total').textContent = data.length;
+}
+
+// ===== FILTER =====
+function applyFilters() {
+  var status = document.getElementById('filter-status').value;
+  var plan = document.getElementById('filter-plan').value;
+  var name = document.getElementById('filter-name').value.toLowerCase();
+  var filtered = tableData.filter(function(row) {
+    if (status && row.status !== status) return false;
+    if (plan && row.plan.indexOf(plan) === -1) return false;
+    if (name && row.name.toLowerCase().indexOf(name) === -1 && row.id.toLowerCase().indexOf(name) === -1) return false;
+    return true;
+  });
+  renderTable(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-plan').value = '';
+  document.getElementById('filter-name').value = '';
+  renderTable(tableData);
+  showToast('筛选条件已重置', 'info');
+}
+
+// ===== SIMPLE MODAL =====
+function openSimpleModal() {
+  document.getElementById('simple-modal-overlay').classList.add('show');
+}
+function closeSimpleModal() {
+  document.getElementById('simple-modal-overlay').classList.remove('show');
+}
+function submitSimpleModal() {
+  var name = document.getElementById('simple-name').value.trim();
+  var cate = document.getElementById('simple-cate').value;
+  if (!name) { showToast('请填写线索名称', 'error'); return; }
+  if (!cate) { showToast('请选择所属品类', 'error'); return; }
+  closeSimpleModal();
+  showToast('线索创建成功！', 'success');
+  // reset form
+  document.getElementById('simple-name').value = '';
+  document.getElementById('simple-name-count').textContent = '0';
+  document.getElementById('simple-cate').value = '';
+  var remarkEl = document.getElementById('simple-remark');
+  if (remarkEl) remarkEl.value = '';
+  var themeEl = document.getElementById('simple-theme');
+  if (themeEl) themeEl.value = '';
+}
+
+// ===== WIZARD =====
+function openWizard() {
+  resetWizard();
+  document.getElementById('wizard-overlay').classList.add('show');
+}
+function closeWizard() {
+  document.getElementById('wizard-overlay').classList.remove('show');
+}
+function resetWizard() {
+  currentStep = 1;
+  currentTaskType = '';
+  goStep(1);
+  ['translate','label','splice','gen'].forEach(function(t) {
+    var up = document.getElementById('upload-' + t);
+    if (up) up.classList.remove('show');
+    var rs = document.getElementById('result-' + t);
+    if (rs) rs.classList.add('hidden');
+    var card = document.getElementById('type-card-' + t);
+    if (card) card.classList.remove('selected');
+    var f = document.getElementById('form-' + t);
+    if (f) f.classList.add('hidden');
+  });
+  document.getElementById('type-hint').style.display = 'block';
+  document.getElementById('ai-loading').classList.add('hidden');
+  document.getElementById('step1-config').classList.remove('show');
+  document.getElementById('quota-panel-wrap').style.display = '';
+  document.getElementById('splice-count').textContent = '0';
+  document.querySelectorAll('#splice-grid .grid-9-item').forEach(function(el) { el.classList.remove('selected'); });
+}
+
+function goStep(n) {
+  currentStep = n;
+  document.getElementById('wizard-step1').classList.toggle('hidden', n !== 1);
+  document.getElementById('wizard-step2').classList.toggle('hidden', n !== 2);
+  // 按钮状态
+  document.getElementById('wizard-prev').style.display = 'none';
+  var nextBtn = document.getElementById('wizard-next');
+  var cancelBtn = document.getElementById('wizard-cancel');
+  var toTasksBtn = document.getElementById('btn-to-tasks');
+  if (n === 1) {
+    nextBtn.textContent = '提交';
+    nextBtn.style.display = 'inline-flex';
+    cancelBtn.textContent = '取消';
+    if (toTasksBtn) toTasksBtn.style.display = 'none';
+  } else {
+    nextBtn.style.display = 'none';
+    cancelBtn.textContent = '关闭';
+    if (toTasksBtn) toTasksBtn.style.display = 'inline-flex';
+  }
+  // 步骤指示器
+  for (var i = 1; i <= 2; i++) {
+    var item = document.getElementById('step-item-' + i);
+    var circle = document.getElementById('step-circle-' + i);
+    item.className = 'step-item';
+    if (i < n) { item.classList.add('completed'); circle.innerHTML = '&#10003;'; }
+    else if (i === n) { item.classList.add('active'); circle.textContent = i; }
+    else { circle.textContent = i; }
+  }
+}
+
+function wizardNext() {
+  if (currentStep !== 1) return;
+  // 1. 校验类型已选
+  if (!currentTaskType) { showToast('请先选择任务类型', 'error'); return; }
+  // 2. 校验已上传 / 已选图片
+  if (currentTaskType === 'splice') {
+    var spliceSelected = document.querySelectorAll('#splice-grid .grid-9-item.selected').length;
+    if (spliceSelected === 0) { showToast('请至少选择 1 张图片', 'error'); return; }
+  } else {
+    var resultEl = document.getElementById('result-' + currentTaskType);
+    if (!resultEl || resultEl.classList.contains('hidden')) {
+      showToast('请先上传文件', 'error'); return;
+    }
+  }
+  // 3. 校验配置表单
+  if (currentTaskType === 'translate') {
+    var tn = document.getElementById('task-name-translate').value.trim();
+    var tl = document.getElementById('lang-translate').value;
+    if (!tn) { showToast('请填写任务名称', 'error'); return; }
+    if (!tl) { showToast('请选择目标语言', 'error'); return; }
+  } else if (currentTaskType === 'label') {
+    var ln = document.getElementById('task-name-label').value.trim();
+    var ll = document.getElementById('lang-label').value;
+    if (!ln) { showToast('请填写任务名称', 'error'); return; }
+    if (!ll) { showToast('请选择目标语言', 'error'); return; }
+  } else if (currentTaskType === 'splice') {
+    var sn = document.getElementById('task-name-splice').value.trim();
+    if (!sn) { showToast('请填写任务名称', 'error'); return; }
+  } else {
+    var gn = document.getElementById('task-name-gen').value.trim();
+    if (!gn) { showToast('请填写任务名称', 'error'); return; }
+  }
+  // 4. 提交
+  submitWizard();
+}
+
+function submitWizard() {
+  var typeMap  = {translate:'图片文本翻译', label:'图片打标与翻译', splice:'图片拼接', gen:'文生图'};
+  var nameMap  = {translate:'task-name-translate', label:'task-name-label', splice:'task-name-splice', gen:'task-name-gen'};
+  var langElMap = {translate:'lang-translate', label:'lang-label', splice:null, gen:null};
+  var countMap = {translate:24, label:18, splice:parseInt(document.getElementById('splice-count').textContent)||3, gen:12};
+  var tokenMap = {translate:'约 4,800 Token', label:'约 3,600 Token', splice:'不消耗翻译额度', gen:'约 2,400 Token'};
+  var timeMap  = {translate:'约 24~96 分钟（高峰 4 分/张，非高峰 1 分/张）', label:'约 18~72 分钟', splice:'约 2~5 分钟', gen:'约 12~48 分钟'};
+  var planMap  = {translate:'后端路由', label:'后端路由', splice:'—', gen:'后端路由(方案一)'};
+
+  var taskName = document.getElementById(nameMap[currentTaskType]).value.trim() || '新建任务';
+  var lang = langElMap[currentTaskType] ? document.getElementById(langElMap[currentTaskType]).value : '';
+  var cnt  = countMap[currentTaskType];
+
+  // 写入任务列表
+  addNewTask({
+    id: 'TL' + Date.now(),
+    name: taskName,
+    count: cnt,
+    type: typeMap[currentTaskType],
+    plan: planMap[currentTaskType],
+    lang: lang || '—',
+    done: 0,
+    total: cnt,
+    created: '2026-03-22 ' + new Date().toTimeString().slice(0,5),
+    failCount: 0,
+    status: 'processing'
+  });
+
+  // 填充 Step2 摘要
+  document.getElementById('sum-name').textContent = taskName;
+  document.getElementById('sum-type').textContent = typeMap[currentTaskType];
+  document.getElementById('sum-count').textContent = cnt + ' 张';
+  document.getElementById('sum-token').textContent = tokenMap[currentTaskType];
+  document.getElementById('sum-time').textContent = timeMap[currentTaskType];
+  var langRow = document.getElementById('sum-lang-row');
+  if (lang) {
+    document.getElementById('sum-lang').textContent = lang;
+    if (langRow) langRow.style.display = '';
+  } else {
+    if (langRow) langRow.style.display = 'none';
+  }
+
+  goStep(2);
+  showToast('任务创建成功，正在处理中', 'success');
+}
+
+// ===== TYPE SELECTION =====
+function selectTaskType(type) {
+  currentTaskType = type;
+  ['translate','label','splice','gen'].forEach(function(t) {
+    var card = document.getElementById('type-card-' + t);
+    if (card) card.classList.toggle('selected', t === type);
+    var panel = document.getElementById('upload-' + t);
+    if (panel) panel.classList.toggle('show', t === type);
+    var f = document.getElementById('form-' + t);
+    if (f) f.classList.toggle('hidden', t !== type);
+  });
+  document.getElementById('type-hint').style.display = 'none';
+  document.getElementById('ai-loading').classList.add('hidden');
+  // 图片拼接不需要展示额度面板
+  document.getElementById('quota-panel-wrap').style.display = type === 'splice' ? 'none' : '';
+  // 若该类型已有上传结果，显示配置区；否则隐藏
+  var resultEl = document.getElementById('result-' + type);
+  var hasResult = resultEl && !resultEl.classList.contains('hidden');
+  var spliceOk = type === 'splice' && document.querySelectorAll('#splice-grid .grid-9-item.selected').length > 0;
+  document.getElementById('step1-config').classList.toggle('show', hasResult || spliceOk);
+  // 更新拼接图片数显示
+  if (type === 'splice') {
+    var cnt = document.querySelectorAll('#splice-grid .grid-9-item.selected').length;
+    var dispEl = document.getElementById('splice-count-display');
+    if (dispEl) dispEl.value = cnt + ' 张';
+  }
+}
+
+// ===== UPLOAD SIMULATION =====
+function simulateUpload(type) {
+  document.getElementById('ai-loading').classList.remove('hidden');
+  var subMap = {translate:'OCR 识别中，请稍候', label:'图片分析中，请稍候', splice:'—', gen:'解析 Excel 数据中...'};
+  document.getElementById('ai-loading-sub').textContent = subMap[type] || '处理中...';
+
+  setTimeout(function() {
+    document.getElementById('ai-loading').classList.add('hidden');
+    var resultEl = document.getElementById('result-' + type);
+    if (resultEl) resultEl.classList.remove('hidden');
+
+    var quotaMap = {
+      translate: {upload:'24 张', plan:'方案二（24张）'},
+      label:     {upload:'18 张', plan:'方案二（18张）'},
+      splice:    {upload:'0 张',  plan:'不消耗额度'},
+      gen:       {upload:'12 行', plan:'方案一（12张）'}
+    };
+    var q = quotaMap[type] || {};
+    // 上传完成后显示配置区
+    document.getElementById('step1-config').classList.add('show');
+    ['translate','label','splice','gen'].forEach(function(t) {
+      var f = document.getElementById('form-' + t);
+      if (f) f.classList.toggle('hidden', t !== type);
+    });
+    showToast('上传完成，请填写任务配置', 'success');
+  }, 1500);
+}
+
+// ===== SPLICE GRID =====
+function toggleSpliceItem(el) {
+  var selected = document.querySelectorAll('#splice-grid .grid-9-item.selected').length;
+  if (!el.classList.contains('selected') && selected >= 9) {
+    showToast('最多选择 9 张图片', 'error');
+    return;
+  }
+  el.classList.toggle('selected');
+  var cnt = document.querySelectorAll('#splice-grid .grid-9-item.selected').length;
+  document.getElementById('splice-count').textContent = cnt;
+  if (cnt > 0) {
+    var rsEl = document.getElementById('result-splice');
+    rsEl.classList.remove('hidden');
+    document.getElementById('splice-count-result').textContent = cnt;
+    // 显示配置区
+    document.getElementById('step1-config').classList.add('show');
+    ['translate','label','splice','gen'].forEach(function(t) {
+      var f = document.getElementById('form-' + t);
+      if (f) f.classList.toggle('hidden', t !== 'splice');
+    });
+    // 更新已选图片数
+    var dispEl = document.getElementById('splice-count-display');
+    if (dispEl) dispEl.value = cnt + ' 张';
+  }
+}
+
+// ===== ACTIONS =====
+function downloadAll(id) {
+  showToast('下载任务已创建，请稍候', 'success');
+}
+function openRetryModal(id, name) {
+  retryTargetId = id;
+  document.getElementById('retry-task-name').textContent = name;
+  document.getElementById('retry-overlay').classList.add('show');
+}
+function closeRetryModal() {
+  document.getElementById('retry-overlay').classList.remove('show');
+}
+function confirmRetry() {
+  closeRetryModal();
+  // update row status
+  var rowIdx = tableData.findIndex(function(r) { return r.id === retryTargetId; });
+  if (rowIdx !== -1) {
+    tableData[rowIdx].status = 'processing';
+    tableData[rowIdx].done = 0;
+    tableData[rowIdx].failCount = 0;
+    renderTable(tableData);
+    updateStats();
+  }
+  showToast('重试任务已提交，正在处理中', 'success');
+}
+function openExportModal(id, name) {
+  document.getElementById('export-overlay').classList.add('show');
+}
+function closeExportModal() {
+  document.getElementById('export-overlay').classList.remove('show');
+}
+function confirmExport() {
+  closeExportModal();
+  showToast('失败记录导出成功，请检查下载文件', 'success');
+}
+
+// ===== ADD TASK =====
+function addNewTask(task) {
+  tableData.unshift(task);
+  renderTable(tableData);
+  updateStats();
+}
+function updateStats() {
+  var total = tableData.length;
+  var done = tableData.filter(function(r){return r.status==='done';}).length;
+  var processing = tableData.filter(function(r){return r.status==='processing';}).length;
+  var failed = tableData.filter(function(r){return r.status==='partial'||r.status==='failed';}).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-processing').textContent = processing;
+  document.getElementById('stat-failed').textContent = failed;
+}
+
+// ===== DRAWER =====
+function openDrawer() {
+  document.getElementById('drawer-overlay').classList.add('show');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('show');
+}
+
+// ===== TOAST =====
+function showToast(msg, type) {
+  var container = document.getElementById('toast-container');
+  var el = document.createElement('div');
+  el.className = 'toast toast-' + (type || 'info');
+  el.innerHTML = (type==='success'?'&#10003;':type==='error'?'&#10007;':'&#8505;') + ' ' + msg;
+  container.appendChild(el);
+  setTimeout(function() {
+    el.style.animation = 'slideOut 0.2s ease forwards';
+    setTimeout(function() { container.removeChild(el); }, 220);
+  }, 3000);
+}
+
+// ===== CHAR COUNT =====
+function updateCharCount(input, countId) {
+  document.getElementById(countId).textContent = input.value.length;
+}
+
+// ===== INIT =====
+renderTable(tableData);
+</script>
+</body>
+</html>
