@@ -1,14 +1,652 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Privacy Policy - SHEIN Internal Trend Tool</title>
-    <meta name="p:domain_verify" content="cd78d20784a7a47855a58445f8dba1e1"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHEIN Internal Trend Radar — Quantitative Trend Intelligence</title>
+  <meta name="p:domain_verify" content="cd78d20784a7a47855a58445f8dba1e1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── CSS Variables ─── */
+    :root {
+      --parchment:       #f5f0e6;
+      --parchment-dark:  #ede5d2;
+      --parchment-deep:  #e0d5bc;
+      --parchment-card:  #ede8d8;
+      --ink:             #1a1410;
+      --ink-medium:      #3b2c1e;
+      --ink-light:       #6b5040;
+      --ink-faint:       #9a8572;
+      --sepia-gold:      #b8922a;
+      --sepia-warm:      #8b6914;
+      --sepia-border:    #c4a96a;
+      --sepia-muted:     #c4b49a;
+      --green-pos:       #2d5a27;
+      --formula-bg:      #e6dcc8;
+      --rule-color:      #c4a96a;
+    }
+
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background-color: var(--parchment);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.8;
+      /* subtle paper grain */
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    /* ─── Layout ─── */
+    .page-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+    }
+
+    /* ─── Ornamental Divider ─── */
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 48px 0;
+      color: var(--sepia-gold);
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      letter-spacing: 0.12em;
+    }
+    .ornament::before,
+    .ornament::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--rule-color), transparent);
+    }
+    .ornament span { white-space: nowrap; opacity: 0.85; }
+
+    /* ─── Section Wrapper ─── */
+    .section {
+      position: relative;
+      padding-left: 64px;
+      margin-bottom: 56px;
+    }
+
+    /* Roman numeral side label */
+    .section-numeral {
+      position: absolute;
+      left: 0;
+      top: 4px;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--sepia-warm);
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      opacity: 0.65;
+      user-select: none;
+    }
+
+    /* ─── Typography ─── */
+    h1, h2, h3 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.25;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      letter-spacing: 0.01em;
+    }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 10px;
+      margin-top: 28px;
+    }
+
+    p {
+      font-size: 15.5px;
+      line-height: 1.85;
+      color: var(--ink-medium);
+      margin-bottom: 16px;
+    }
+
+    /* ─── HEADER ─── */
+    .site-header {
+      padding: 72px 0 0;
+      text-align: center;
+      margin-bottom: 0;
+    }
+
+    .header-eyebrow {
+      display: inline-block;
+      font-family: 'Lora', serif;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--sepia-warm);
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--sepia-border);
+    }
+
+    .site-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    .site-subtitle {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--ink-light);
+      letter-spacing: 0.04em;
+      margin-bottom: 20px;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: var(--ink);
+      color: var(--parchment);
+      font-family: 'Lora', serif;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 2px;
+    }
+
+    /* ─── FORMULA BLOCK ─── */
+    .formula-card {
+      background: var(--formula-bg);
+      border-left: 3px solid var(--sepia-gold);
+      border-radius: 0 6px 6px 0;
+      padding: 32px 40px;
+      margin: 28px 0;
+      text-align: center;
+    }
+
+    .formula-equation {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    .formula-vars {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--ink-light);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── CODE BLOCK ─── */
+    .code-block {
+      background: var(--parchment-deep);
+      border: 1px solid var(--sepia-muted);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 20px 0;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--ink-medium);
+      overflow-x: auto;
+    }
+
+    .code-label {
+      font-family: 'Lora', serif;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--sepia-warm);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .code-comment { color: var(--ink-faint); font-style: italic; }
+    .code-keyword { color: var(--sepia-warm); font-weight: 700; }
+
+    /* ─── TABLE ─── */
+    .table-note {
+      font-style: italic;
+      font-size: 13px;
+      color: var(--ink-faint);
+      margin-bottom: 16px;
+    }
+
+    .trend-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .trend-table thead tr {
+      background: var(--ink-medium);
+      color: var(--parchment);
+    }
+
+    .trend-table thead th {
+      font-family: 'Lora', serif;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      text-align: left;
+      border: none;
+    }
+
+    .trend-table thead th:not(:first-child) { text-align: center; }
+
+    .trend-table tbody tr {
+      border-bottom: 1px solid var(--sepia-muted);
+      transition: background 0.15s ease;
+    }
+
+    .trend-table tbody tr:hover { background: var(--parchment-dark); }
+
+    .trend-table tbody tr:last-child { border-bottom: 2px solid var(--ink-medium); }
+
+    .trend-table td {
+      padding: 14px 16px;
+      color: var(--ink-medium);
+      vertical-align: middle;
+    }
+
+    .trend-table td:not(:first-child):not(:nth-child(2)) {
+      text-align: center;
+      font-family: 'Courier Prime', monospace;
+      font-size: 14px;
+    }
+
+    .ts-code {
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 0.05em;
+    }
+
+    .trend-keyword {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* Intensity score heat */
+    .score-cell {
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 3px;
+      display: inline-block;
+      min-width: 40px;
+    }
+    .score-84 { background: #d4b07a; color: var(--ink); }
+    .score-82 { background: #dbbf92; color: var(--ink); }
+    .score-81 { background: #e0c99e; color: var(--ink); }
+
+    .pct-pos {
+      color: var(--green-pos);
+      font-weight: 600;
+    }
+
+    /* ─── PRIVACY SECTION ─── */
+    .privacy-badge {
+      display: inline-block;
+      border: 1px solid var(--sepia-border);
+      color: var(--sepia-warm);
+      font-family: 'Lora', serif;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    .privacy-item {
+      margin-bottom: 24px;
+      padding-left: 20px;
+      border-left: 2px solid var(--parchment-deep);
+    }
+
+    .privacy-item h3 {
+      font-size: 13px;
+      color: var(--ink-medium);
+      margin-top: 0;
+      margin-bottom: 6px;
+    }
+
+    .privacy-item p {
+      font-size: 14.5px;
+      color: var(--ink-light);
+      line-height: 1.75;
+      margin-bottom: 0;
+    }
+
+    .privacy-highlight {
+      background: var(--formula-bg);
+      border-left: 3px solid var(--sepia-gold);
+      padding: 12px 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 12px 0;
+    }
+
+    .privacy-highlight p {
+      font-size: 14px;
+      color: var(--ink-medium);
+      margin: 0;
+    }
+
+    .contact-strip {
+      background: var(--parchment-dark);
+      border: 1px solid var(--sepia-muted);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin-top: 8px;
+    }
+
+    .contact-strip p {
+      font-size: 13.5px;
+      margin: 0;
+      color: var(--ink-medium);
+    }
+
+    .contact-strip a {
+      color: var(--sepia-warm);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .contact-strip a:hover { text-decoration: underline; }
+
+    /* ─── FOOTER ─── */
+    .site-footer {
+      border-top: 1px solid var(--sepia-muted);
+      padding-top: 32px;
+      margin-top: 64px;
+      text-align: center;
+    }
+
+    .site-footer p {
+      font-size: 12.5px;
+      color: var(--ink-faint);
+      line-height: 1.7;
+      margin-bottom: 4px;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink-medium);
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    /* ─── Fade-in animation ─── */
+    .section, .site-header, .site-footer {
+      animation: fadeUp 0.6s ease both;
+    }
+    .section:nth-child(2) { animation-delay: 0.05s; }
+    .section:nth-child(3) { animation-delay: 0.10s; }
+    .section:nth-child(4) { animation-delay: 0.15s; }
+    .section:nth-child(5) { animation-delay: 0.20s; }
+    .section:nth-child(6) { animation-delay: 0.25s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 640px) {
+      .page-wrap { padding: 0 20px 60px; }
+      .section { padding-left: 0; }
+      .section-numeral { display: none; }
+      .formula-equation { font-size: 20px; }
+      .formula-card { padding: 24px 20px; }
+      .trend-table { font-size: 12px; }
+      .trend-table td, .trend-table th { padding: 10px 10px; }
+    }
+  </style>
 </head>
 <body>
-    <h1>Privacy Policy for SHEIN Internal Trend Radar</h1>
-    <p>Organization: SHEIN (Global Fashion & Lifestyle Retailing)</p>
-    <hr>
-    <p>This is an internal research tool developed for SHEIN's trend team to analyze market data.</p>
+<div class="page-wrap">
+
+  <!-- ══════════════════════════════ HEADER ══════════════════════════════ -->
+  <header class="site-header">
+    <div class="header-eyebrow">Internal Research Platform · 2026</div>
+    <h1 class="site-title">SHEIN Internal Trend Radar</h1>
+    <p class="site-subtitle">Quantitative Trend Intelligence · Internal Research Platform</p>
+    <div class="header-badge">For Authorized Designers Only</div>
+  </header>
+
+  <div class="ornament"><span>❧ &nbsp; Research Report &nbsp; ❧</span></div>
+
+  <!-- ══════════════════════════ I. EXECUTIVE SUMMARY ══════════════════════════ -->
+  <section class="section">
+    <span class="section-numeral">I · Overview</span>
+    <h2>Executive Summary</h2>
+    <p>
+      This platform transforms Pinterest's global search trend signals into actionable supply chain
+      decisions for SHEIN's design team. By applying a proprietary quantitative scoring model to
+      publicly available trend keyword data, we identify high-signal trend categories weeks before
+      they reach mainstream market saturation — enabling precision inventory planning and product
+      development prioritization.
+    </p>
+    <p>
+      All data processed by this platform is derived exclusively from aggregated, anonymized,
+      publicly available trend metadata. No personally identifiable information is collected,
+      stored, or transmitted at any stage of the pipeline.
+    </p>
+  </section>
+
+  <div class="ornament"><span>§</span></div>
+
+  <!-- ══════════════════════════ II. METHODOLOGY ══════════════════════════ -->
+  <section class="section">
+    <span class="section-numeral">II · Methodology</span>
+    <h2>Quantitative Methodology</h2>
+    <p>
+      Each trend keyword is evaluated on two independent axes: <em>Exploding Factor</em> (B)
+      measures short-term search velocity and burst intensity; <em>Growth Rate</em> (G) measures
+      sustained longitudinal growth momentum. The composite Intensity Score (S) is computed as:
+    </p>
+
+    <div class="formula-card">
+      <div class="formula-equation">S &nbsp;=&nbsp; 0.6 &times; B &nbsp;+&nbsp; 0.4 &times; G</div>
+      <div class="formula-vars">
+        B &nbsp;=&nbsp; Exploding Factor &nbsp;&nbsp;·&nbsp;&nbsp;
+        G &nbsp;=&nbsp; Growth Rate &nbsp;&nbsp;·&nbsp;&nbsp;
+        S &nbsp;=&nbsp; Signal Intensity
+      </div>
+    </div>
+
+    <span class="code-label">Algorithm · Core Scoring Logic</span>
+    <div class="code-block"><span class="code-keyword">def</span> compute_intensity(burst_factor, growth_rate):
+    <span class="code-comment"># Weighted composite of burst velocity and sustained growth</span>
+    weighted_burst  = burst_factor  * <span class="code-keyword">0.6</span>
+    weighted_growth = growth_rate   * <span class="code-keyword">0.4</span>
+    <span class="code-keyword">return</span> round(weighted_burst + weighted_growth)</div>
+
+    <p style="font-size:14px; color: var(--ink-faint); font-style: italic; margin-top: 8px;">
+      The 0.6 / 0.4 weighting reflects empirical observation that burst velocity is a stronger
+      leading indicator of short-term supply chain relevance than sustained growth alone.
+    </p>
+  </section>
+
+  <div class="ornament"><span>§</span></div>
+
+  <!-- ══════════════════════════ III. TREND DASHBOARD ══════════════════════════ -->
+  <section class="section">
+    <span class="section-numeral">III · Dashboard</span>
+    <h2>Trend Signal Dashboard — Sample Output</h2>
+    <p class="table-note">* Simulated data for methodology demonstration purposes</p>
+
+    <table class="trend-table">
+      <thead>
+        <tr>
+          <th>ts_code</th>
+          <th>Trend Keyword</th>
+          <th>Exploding Factor (B)</th>
+          <th>Growth Rate (G)</th>
+          <th>Intensity Score (S)</th>
+          <th>pct_chg</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ts-code">PCT_POET</span></td>
+          <td><span class="trend-keyword">Poetcore Silhouette</span></td>
+          <td>88</td>
+          <td>74</td>
+          <td><span class="score-cell score-82">82</span></td>
+          <td><span class="pct-pos">+18.4%</span></td>
+        </tr>
+        <tr>
+          <td><span class="ts-code">PCT_DACAD</span></td>
+          <td><span class="trend-keyword">Dark Academia Knit</span></td>
+          <td>91</td>
+          <td>65</td>
+          <td><span class="score-cell score-81">81</span></td>
+          <td><span class="pct-pos">+12.7%</span></td>
+        </tr>
+        <tr>
+          <td><span class="ts-code">PCT_BALL</span></td>
+          <td><span class="trend-keyword">Ballet Core Satin</span></td>
+          <td>79</td>
+          <td>92</td>
+          <td><span class="score-cell score-84">84</span></td>
+          <td><span class="pct-pos">+22.1%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="ornament"><span>§</span></div>
+
+  <!-- ══════════════════════════ IV. PRIVACY & COMPLIANCE ══════════════════════════ -->
+  <section class="section">
+    <span class="section-numeral">IV · Compliance</span>
+    <h2>Privacy Policy &amp; Compliance Declaration</h2>
+    <div class="privacy-badge">For Pinterest API Review</div>
+
+    <div class="privacy-item">
+      <h3>1. Overview</h3>
+      <p>
+        SHEIN Trends Internal Radar for Designer ONLY is an internal research and analysis tool
+        developed exclusively for SHEIN's design and trend intelligence team. Its sole purpose is
+        to support internal market research by analyzing publicly available trend keyword data.
+        Access is strictly limited to authorized SHEIN designers and trend analysts. This tool is
+        not a consumer-facing product and is not accessible to the general public.
+      </p>
+    </div>
+
+    <div class="privacy-item">
+      <h3>2. Data We Access</h3>
+      <p>This tool accesses only the following categories of data:</p>
+      <p style="margin-top:8px;">
+        (1) Publicly available trend keyword signals (e.g., trending search terms and categories);<br/>
+        (2) Aggregated, anonymized market trend metadata provided by third-party platform APIs.
+      </p>
+      <div class="privacy-highlight">
+        <p>
+          <strong>We do NOT collect, process, store, or transmit any personally identifiable
+          information (PII) of Pinterest users or any other individuals.</strong> No usernames,
+          emails, profile data, private boards, or behavioral data are accessed at any time.
+        </p>
+      </div>
+    </div>
+
+    <div class="privacy-item">
+      <h3>3. How Data Is Used</h3>
+      <p>
+        All retrieved data is used exclusively for internal business intelligence purposes,
+        including trend forecasting, product assortment planning, and market gap analysis within
+        SHEIN's merchandise operations team. Data is never sold, shared with third parties, or
+        used for advertising targeting.
+      </p>
+    </div>
+
+    <div class="privacy-item">
+      <h3>4. Data Storage &amp; Security</h3>
+      <p>
+        Any data processed by this tool is stored exclusively on SHEIN's internal,
+        access-controlled servers located within SHEIN's secure corporate infrastructure.
+        Access is strictly restricted to authorized SHEIN designers and trend analysts.
+        All data transmission is encrypted in transit via HTTPS/TLS.
+      </p>
+    </div>
+
+    <div class="privacy-item">
+      <h3>5. Third-Party API Compliance</h3>
+      <p>
+        This tool integrates with third-party APIs (including the Pinterest API) strictly in
+        accordance with each platform's Developer Terms of Service and API Usage Policy.
+        API credentials are stored securely and are never exposed publicly. Rate limits and
+        usage guidelines are respected at all times.
+      </p>
+    </div>
+
+    <div class="privacy-item">
+      <h3>6. Retention &amp; Deletion</h3>
+      <p>
+        Trend keyword data is retained for a maximum of 90 days for analysis purposes and is
+        then purged from internal systems. No long-term archival of third-party platform data
+        takes place beyond this window.
+      </p>
+    </div>
+
+    <div class="privacy-item">
+      <h3>7. Contact</h3>
+      <div class="contact-strip">
+        <p><strong>SHEIN Trend Intelligence Team</strong></p>
+        <p>Email: <a href="mailto:marshallma@shein.com">marshallma@shein.com</a></p>
+        <p>Organization: SHEIN (Global Fashion &amp; Lifestyle Retailing)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ FOOTER ══════════════════════════ -->
+  <footer class="site-footer">
+    <div class="footer-logo">SHEIN Internal Trend Radar</div>
+    <p>&copy; 2026 SHEIN Global Fashion &amp; Lifestyle Retailing. All rights reserved.</p>
+    <p>This report and its underlying methodology are proprietary and confidential.</p>
+    <p style="margin-top:8px;">
+      Privacy policy applies solely to the SHEIN Trends Internal Radar for Designer ONLY tool
+      and is intended for review by third-party API providers as part of the API access application process.
+    </p>
+  </footer>
+
+</div>
 </body>
 </html>
